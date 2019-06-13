@@ -1,31 +1,40 @@
 <template>
   <div class="Safeguard-coat">
     <loading :isshow="loading"></loading>
-    <div class="unusual-wrap">
-        <div class="list-wrap2">
-          <div class="list" v-for="item in initdata.recent">
-            <div class="photo left"><img :src="item.headerImage"></div>
-            <div class="timer left">{{item.visitedAt}}</div>
-            <div class="name right">{{item.name}}</div>
+    <div class="limit-wrap" v-if="isshow">
+      <div class="unusual-wrap">
+          <div class="list-wrap2">
+            <div class="list" v-for="item in initdata.recent">
+              <div class="photo left"><img :src="item.headerImage"></div>
+              <div class="timer left">{{item.visitedAt}}</div>
+              <div class="name right">{{item.name}}</div>
+            </div>
           </div>
-        </div>
-    </div>
-    <div class="scroll-wrap">
-      <div class="day-total">日统计 &nbsp;&nbsp;&nbsp;&nbsp;来访 {{initdata.today}} 人</div>
-      <div class="week-total">
-        <p>周统计</p>
-        <div class="echarts-cnt" ref="mychart"></div>
       </div>
-      <!-- <div class="export-btn-wrap">
-          <div class="export-btn right">历史统计导出</div>
-      </div> -->
+      <div class="scroll-wrap">
+        <div class="day-total">日统计 &nbsp;&nbsp;&nbsp;&nbsp;来访 {{initdata.today}} 人</div>
+        <div class="week-total">
+          <p>周统计</p>
+          <div class="echarts-cnt" ref="mychart"></div>
+        </div>
+        <!-- <div class="export-btn-wrap">
+            <div class="export-btn right">历史统计导出</div>
+        </div> -->
 
-      <div @touchstart="tocameralist" class="video-btn">监控画面 <span class="arrow"></span></div>
+        <div @touchstart="tocameralist" class="video-btn">监控画面 <span class="arrow"></span></div>
+      </div>
+
+    </div>
+
+    <div v-if="noAccess" class="no-access">
+      <div class="return-btn" @click="returnRouter" >点击返回</div>
     </div>
 
     <div class="nav-coat">
         <navigation pronavigationId="3"></navigation>
     </div>
+
+    
   </div>
 </template>
 
@@ -41,7 +50,9 @@ export default {
       userID:"",
       token:"",
       initdata:{},
-      loading:true
+      loading:true,
+      isshow:false,
+      noAccess:false
     }
   },
   created(){
@@ -65,12 +76,18 @@ export default {
     this.$http.get(_this.apiurl+'/api/security/data?token='+this.token+'&userid='+this.userID).then(function(res){
         var msg = res.body;
         if(msg.code===0){
-          _this.initdata = msg.data;
-
-          //开始渲染echarts
-          this.$nextTick(function () {
-              _this.initEchart(msg.data.week);
-          })
+          if(msg.role===1){ //role==1表示领导权限，0表示普通员工
+            _this.initdata = msg.data;
+            _this.isshow = true;
+            _this.noAccess = false
+            //开始渲染echarts
+            this.$nextTick(function () {
+                _this.initEchart(msg.data.week);
+            })
+          }else{
+            _this.isshow = false;
+            _this.noAccess = true
+          }
 
         }else{
           alert(msg.msg)
@@ -117,6 +134,9 @@ export default {
       };
       this.chart.setOption(option);
     },
+    returnRouter(){
+      this.$router.back(-1)
+    }
   },
   components:{
     navigation,
@@ -283,5 +303,30 @@ export default {
   height: 6rem;
   margin-top:.26rem;
   overflow: hidden;
+}
+
+.no-access{
+  width:100%;
+  min-height: 13rem;
+  overflow: hidden;
+  background:url('no_access.png') no-repeat center center;
+  background-size: 5.33rem 4.4rem;
+}
+.return-btn{
+  width:8rem;
+  height:1.2rem;
+  background-color: #ff8400;
+  text-align: center;
+  line-height: 1.2rem;
+  color:#fff;
+  border-radius: 5px;
+  font-size: 15px;
+  margin:9.7rem auto 0;
+}
+[data-dpr="2"] .return-btn{
+    font-size: 30px;
+}
+[data-dpr="3"] .return-btn{
+    font-size: 45px;
 }
 </style>

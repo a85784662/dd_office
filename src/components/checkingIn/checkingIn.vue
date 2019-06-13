@@ -1,21 +1,21 @@
 <template>
   <div class="energy-coat">
     
-    <div v-if="limits==='a'" class="limit-wrap">
+    <div v-if="limits===1" class="limit-wrap">
       <div class="top-statistics">
         <div class="item1 ">日统计</div>
         <div class="item1 ">{{initdata.today.normal}}人 正常</div>
         <div class="item1 "><span>{{initdata.today.late}}人</span> 迟到</div>
         <div class="item1 "><span>{{initdata.today.innormal}}人</span> 异常</div>
       </div>
-      <div class="echarts-wrap">
+      <div v-if="limits===1" class="echarts-wrap">
           <p>月统计</p>
           <div class="echarts-cnt" ref="mychart"></div>
       </div>
       <!-- <div class="tj-export-wrap">
         <div class="tj-export right" @click="StatisticsExport">历史统计导出</div>
       </div> -->
-      <div class="show-block3" @click="tolistcheckingIn">
+      <div v-if="limits===1" class="show-block3" @click="tolistcheckingIn">
           今日考勤状态
           <div class="icon-cnt right">
             <span class="icon"></span>
@@ -59,7 +59,7 @@ export default {
       chart:"",
       dateShow:false,
       mydate:'',
-      limits:'b', //权限：b表示员工，a表示领导
+      limits:0, //权限：0表示员工，1表示领导
       userID:"",
       token:"",
       chartNormal:[],
@@ -95,7 +95,7 @@ export default {
         var msg = res.body;
         if(msg.code===0){
           _this.initdata = msg.data;
-          _this.limits = msg.authlevel;
+          _this.limits = msg.role;
 
           var chartNormal = msg.data.month.normal
           var chartLate = msg.data.month.late

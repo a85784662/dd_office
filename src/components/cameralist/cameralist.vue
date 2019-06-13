@@ -1,20 +1,9 @@
 <template>
   <div class="cameralist-coat">
-
-      <div id="video" class="video-item"></div>
-      <!-- <div class="video-item" @touchstart="tocameradetails">
-          <video class="tyl-video" src="http://172.168.10.124:3000/camera/001" poster="./timg.gif"  autoplay="true"></video>
-          <h3>会议室</h3>
-      </div>
-      <div class="video-item">
-          <video class="tyl-video" src="http://172.168.10.124:3000/camera/002" poster="./timg.gif"  autoplay="true"></video>
-          <h3>茶水间</h3>
-      </div>
-      <div class="video-item">
-          <video class="tyl-video" src="http://172.168.10.124:3000/camera/003" poster="./timg.gif"  autoplay="true"></video>
-          <h3>前台</h3>
-      </div> -->
-      
+      <template v-for="item in allUrl">
+        <div :id="item.id" class="video-item"></div>
+        <h3>{{item.name}}</h3>
+      </template>
   </div>
 </template>
 
@@ -24,10 +13,16 @@ export default {
   name: 'cameralist',
   data () {
     return {
-
+      allUrl:[],
+      userID:"",
+      token:""
     }
   },
   created(){
+
+    this.userID = sessionStorage.getItem('userID');
+    this.token = sessionStorage.getItem('token');
+
     dd.ready(function() {
       dd.biz.navigation.setTitle({
           title : '安防监控',
@@ -38,22 +33,43 @@ export default {
       });
 
     });
+
   },
   mounted(){
-    var videoObject = {
-      live:true,
-      autoplay:true,
-      container: '#video',//“#”代表容器的ID，“.”或“”代表容器的class
-      variable: 'player',//该属性必需设置，值等于下面的new chplayer()的对象
-      flashplayer:false,//如果强制使用flashplayer则设置成true
-      video:'http://172.168.10.124:3000/camera/001'//视频地址
-    };
-    var player=new ckplayer(videoObject);
+    var _this = this
+    this.$http.get(this.apiurl+'/api/security/monitor?token='+this.token+'&userid='+this.userID).then(function(res){
+      var msg = res.body;
+      if(msg.code===0){
+        this.allUrl = msg.data;
+        this.$nextTick(function () {
+            for(var i=0;i<msg.data.length;i++){
+                var varname=msg.data[i].id
+
+                window[varname+'a'] = {
+                  live:true,
+                  autoplay:false,
+                  container: '#'+varname,//“#”代表容器的ID，“.”或“”代表容器的class
+                  variable: varname,//该属性必需设置，值等于下面的new chplayer()的对象
+                  flashplayer:false,//如果强制使用flashplayer则设置成true
+                  video:_this.allUrl[i].url//视频地址
+                }; 
+                window[varname] =new ckplayer(window[varname+'a']);
+              } 
+        })       
+      }else{
+        alert(msg.msg)
+      }
+      
+    },function(err){
+      alert(JSON.stringify(err))
+    }).finally(function(){
+        this.loading = false;
+    })
+
+    
   },
   methods:{
-    tocameradetails(){
-      alert(1111)
-    }
+
   },
   components:{
 
@@ -67,7 +83,7 @@ export default {
 .video-item{
   width: 100%;
   overflow: hidden;
-  margin-top:.8rem;
+
   
 }
 .video-item h3{
@@ -89,5 +105,19 @@ export default {
  width: 100%;
  overflow: hidden;
  background-color: #d8d8d8;
+}
+.cameralist-coat h3{
+  height: 40px;
+  line-height: 40px;
+  overflow: hidden;
+  font-size: 18px;
+  color:#333;
+  text-align: center;
+}
+[data-dpr="2"] .cameralist-coat h3{
+    font-size: 36px;
+}
+[data-dpr="3"] .cameralist-coat h3{
+    font-size: 54px;
 }
 </style>

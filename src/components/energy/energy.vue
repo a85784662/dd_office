@@ -4,12 +4,13 @@
     <tabnav ref="childnave" :navtexts="['大厅','领导区','会议室']" v-on:navClicked="navitemClicked"></tabnav>
 
     <div class="scroll-wrap">
-      <div class="cnt-item" v-for="item in pageDate" @click="toenergyTwo({'id':item.id,'name':item.name})">
+      <div v-if="pageDate.length>0" class="cnt-item" v-for="item in pageDate" @click="toenergyTwo({'id':item.id,'name':item.name})">
           <span class="icon-wrap" :class="item.icon"></span>
           <h3>{{item.remark}}{{item.name}}</h3>
           <p>设备数 {{item.count}}</p>
       </div>
 
+      <div v-if="pageDate.length===0" class="no-access"></div>
       
     </div>
 
@@ -33,19 +34,13 @@ export default {
     return {
       userID:"",
       token:"",
-      pageDate:{},
+      pageDate:[],
       loading:true,
       currentZid:1,
       currentClickIndex_tabnav:1
     }
   },
   created(){
-    //获取userID
-    var userID = sessionStorage.getItem('userID');
-    if(userID){
-      this.userID = userID
-    };
-
     dd.ready(function() {
       dd.biz.navigation.setTitle({
           title : '能耗',
@@ -57,6 +52,11 @@ export default {
 
     });
 
+    //获取userID
+    var userID = sessionStorage.getItem('userID');
+    if(userID){
+      this.userID = userID
+    };
 
     this.token = sessionStorage.getItem('token');
     if(sessionStorage.getItem('currentClickIndex_tabnav')){
@@ -225,6 +225,14 @@ export default {
 .cnt-item p{
   color:#999;
   padding-top: .18rem;
+}
+
+.no-access{
+  width:100%;
+  height: 100%;
+  overflow: hidden;
+  background:url('no_access.png') no-repeat center center;
+  background-size: 5.33rem 4.4rem;
 }
 
 </style>

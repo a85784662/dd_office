@@ -23,4 +23,5 @@ new Vue({
   template: '<App/>'
 })
 
-Vue.prototype.apiurl = 'http://183.66.213.82:3000';
+/*Vue.prototype.apiurl = 'http://183.66.213.82:3000';*/
+Vue.prototype.apiurl = 'http://172.168.10.21:3001';
